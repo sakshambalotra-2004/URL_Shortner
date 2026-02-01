@@ -4,6 +4,7 @@ import { QRCodeCanvas } from "qrcode.react";
 
 export default function UrlForm() {
   const [originalUrl, setOriginalUrl] = useState("");
+  const [expiryMinutes, setExpiryMinutes] = useState(10);
   const [shortUrl, setShortUrl] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -15,80 +16,76 @@ export default function UrlForm() {
     setLoading(true);
 
     try {
-      const response = await axios.post(
+      const res = await axios.post(
         "http://localhost:5000/api/url/shorten",
-        { originalUrl }
+        { originalUrl, expiryMinutes }
       );
 
-      setShortUrl(response.data.shortUrl);
+      setShortUrl(res.data.shortUrl);
     } catch (err) {
-      setError("Failed to shorten URL. Please try again.");
+      setError("Failed to shorten URL");
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100 px-4">
-      <div className="w-full max-w-md bg-white p-6 rounded-2xl shadow-xl">
-        <h2 className="text-2xl font-bold text-center mb-6 text-gray-800">
-          URL Shortener
+    <div className="min-h-screen flex items-center justify-center bg-gray-100">
+      <div className="w-full max-w-md bg-white p-6 rounded-xl shadow-lg">
+        <h2 className="text-2xl font-bold text-center mb-6">
+          URL Shortener + QR Expiry
         </h2>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <input
             type="url"
-            placeholder="Enter long URL..."
+            placeholder="Enter long URL"
             value={originalUrl}
             onChange={(e) => setOriginalUrl(e.target.value)}
             required
-            className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full px-4 py-2 border rounded"
+          />
+
+          <input
+            type="number"
+            min="1"
+            value={expiryMinutes}
+            onChange={(e) => setExpiryMinutes(e.target.value)}
+            className="w-full px-4 py-2 border rounded"
+            placeholder="Expiry in minutes"
           />
 
           <button
             type="submit"
             disabled={loading}
-            className={`w-full py-2 rounded-lg font-semibold text-white transition
-              ${
-                loading
-                  ? "bg-gray-400 cursor-not-allowed"
-                  : "bg-blue-600 hover:bg-blue-700"
-              }`}
+            className="w-full py-2 bg-blue-600 text-white rounded"
           >
-            {loading ? "Shortening..." : "Shorten URL"}
+            {loading ? "Creating..." : "Generate QR"}
           </button>
         </form>
 
-        {/* Error Message */}
         {error && (
-          <p className="mt-4 text-sm text-red-600 bg-red-100 p-2 rounded">
-            {error}
-          </p>
+          <p className="mt-4 text-red-600 text-sm">{error}</p>
         )}
 
-        {/* Result */}
         {shortUrl && (
-          <div className="mt-4 bg-green-100 p-3 rounded">
-            <p className="text-sm text-green-700 mb-1">Short URL:</p>
+          <div className="mt-6 text-center">
+            <p className="text-sm mb-1">Short URL:</p>
             <a
               href={shortUrl}
               target="_blank"
               rel="noreferrer"
-              className="text-blue-600 font-medium break-all hover:underline"
+              className="text-blue-600 break-all"
             >
               {shortUrl}
             </a>
+
             <div className="flex justify-center mt-4">
-              <QRCodeCanvas
-                value = {shortUrl}
-                size = {160}
-                bgColor="#ffffff"
-                fgColor="#000000"
-                level="H"
-              />
+              <QRCodeCanvas value={shortUrl} size={160} />
             </div>
-            <p className="text-xs text-gray-500">
-              Scan QR to open link
+
+            <p className="text-xs text-gray-500 mt-2">
+              Expires in {expiryMinutes} minutes
             </p>
           </div>
         )}
