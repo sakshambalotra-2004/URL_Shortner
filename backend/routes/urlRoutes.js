@@ -1,8 +1,13 @@
-const express = require("express");
-const router = express.Router();
-const { createShortUrl, redirectUrl } = require("../controllers/urlController");
+const router = require("express").Router();
+const auth = require("../middleware/authMiddleware");
+const {
+  createShortUrl,
+  redirectUrl,
+  getUserUrls,
+} = require("../controllers/urlController");
 
-router.post("/shorten", createShortUrl);
+router.post("/shorten", auth, createShortUrl);
+router.get("/my-urls", auth, getUserUrls);
 router.get("/:shortId", redirectUrl);
 
 module.exports = router;
