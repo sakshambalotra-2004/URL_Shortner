@@ -22,8 +22,28 @@ export default function Dashboard() {
   };
 
   useEffect(() => {
+  // Initial load
+  fetchUrls();
+
+  // Auto-refresh every 5 seconds
+  const interval = setInterval(() => {
     fetchUrls();
-  }, []);
+  }, 5000);
+
+  // Refresh when user returns to tab
+  const onFocus = () => {
+    fetchUrls();
+  };
+
+  window.addEventListener("focus", onFocus);
+
+  // Cleanup (VERY IMPORTANT)
+  return () => {
+    clearInterval(interval);
+    window.removeEventListener("focus", onFocus);
+  };
+}, []);
+
 
   const totalLinks = urls.length;
   const totalClicks = urls.reduce((sum, u) => sum + u.clicks, 0);
