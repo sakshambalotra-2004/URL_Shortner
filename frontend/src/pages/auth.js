@@ -4,6 +4,9 @@ import { useNavigate } from "react-router-dom";
 
 export default function Auth() {
   const [isLogin, setIsLogin] = useState(true);
+  const [otpSent, setOtpSent] = useState(false);
+  const [otp, setOtp] = useState("");
+
   const [form, setForm] = useState({
     name: "",
     email: "",
@@ -20,6 +23,7 @@ export default function Auth() {
     e.preventDefault();
 
     try {
+      // -------- LOGIN --------
       if (isLogin) {
         const res = await axios.post(
           "http://localhost:5000/api/auth/login",
@@ -31,17 +35,39 @@ export default function Auth() {
 
         localStorage.setItem("token", res.data.token);
         navigate("/dashboard");
-      } else {
-        await axios.post(
-          "http://localhost:5000/api/auth/signup",
-          form
-        );
+      }
 
-        alert("Signup successful! Please login.");
-        setIsLogin(true);
+      // -------- SIGNUP WITH OTP --------
+      else {
+        // STEP 1: SEND OTP
+        if (!otpSent) {
+          await axios.post(
+            "http://localhost:5000/api/auth/signup",
+            form
+          );
+
+          setOtpSent(true);
+          alert("OTP sent to your email");
+        }
+        // STEP 2: VERIFY OTP
+        else {
+          await axios.post(
+            "http://localhost:5000/api/auth/verify-otp",
+            {
+              email: form.email,
+              otp: otp,
+            }
+          );
+
+          alert("Signup successful! Please login.");
+          setIsLogin(true);
+          setOtpSent(false);
+          setOtp("");
+          setForm({ name: "", email: "", password: "" });
+        }
       }
     } catch (err) {
-      alert(err.response?.data?.msg || "Something went wrong");
+      alert(err.response?.data?.message || "Something went wrong");
     }
   };
 
@@ -53,7 +79,8 @@ export default function Auth() {
         </h2>
 
         <form onSubmit={handleSubmit} className="space-y-4">
-          {!isLogin && (
+          {/* NAME */}
+          {!isLogin && !otpSent && (
             <input
               type="text"
               name="name"
@@ -65,6 +92,7 @@ export default function Auth() {
             />
           )}
 
+          {/* EMAIL */}
           <input
             type="email"
             name="email"
@@ -72,31 +100,56 @@ export default function Auth() {
             value={form.email}
             onChange={handleChange}
             required
+            disabled={otpSent}
             className="w-full p-2 border rounded"
           />
 
-          <input
-            type="password"
-            name="password"
-            placeholder="Password"
-            value={form.password}
-            onChange={handleChange}
-            required
-            className="w-full p-2 border rounded"
-          />
+          {/* PASSWORD */}
+          {(isLogin || (!isLogin && !otpSent)) && (
+            <input
+              type="password"
+              name="password"
+              placeholder="Password"
+              value={form.password}
+              onChange={handleChange}
+              required
+              className="w-full p-2 border rounded"
+            />
+          )}
+
+
+          {/* OTP */}
+          {!isLogin && otpSent && (
+            <input
+              type="text"
+              placeholder="Enter OTP"
+              value={otp}
+              onChange={(e) => setOtp(e.target.value)}
+              required
+              className="w-full p-2 border rounded"
+            />
+          )}
 
           <button
             type="submit"
             className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700"
           >
-            {isLogin ? "Login" : "Sign Up"}
+            {isLogin
+              ? "Login"
+              : otpSent
+              ? "Verify OTP"
+              : "Sign Up"}
           </button>
         </form>
 
         <p className="text-center mt-4 text-sm">
           {isLogin ? "Don’t have an account?" : "Already have an account?"}
           <button
-            onClick={() => setIsLogin(!isLogin)}
+            onClick={() => {
+              setIsLogin(!isLogin);
+              setOtpSent(false);
+              setOtp("");
+            }}
             className="text-blue-600 ml-1 hover:underline"
           >
             {isLogin ? "Sign up" : "Login"}
