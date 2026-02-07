@@ -3,15 +3,15 @@ const nodemailer = require("nodemailer");
 const transporter = nodemailer.createTransport({
   service: "gmail",
   auth: {
-    user: "sakshambalotra2004gmail@gmail.com",
-    pass: "your_app_password", // NOT normal password
+    user: "sakshambalotra2004@gmail.com", // ✅ correct email
+    pass: "uwyejuxogeugvjwm",              // ✅ app password
   },
 });
 
 transporter.sendMail(
   {
-    from: "sakshambalotra2004@gmail.com",
-    to: "balotra2004gmail@gmail.com",
+    from: "sakshambalotra2004@gmail.com",  // ✅ must match user
+    to: "balotra2004@gmail.com",
     subject: "Nodemailer Test",
     text: "If you got this email, nodemailer is working!",
   },

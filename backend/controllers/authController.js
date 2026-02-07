@@ -49,14 +49,17 @@ exports.signup = async (req, res) => {
 
     // Send OTP
     await transporter.sendMail({
+      from: process.env.EMAIL_USER,
       to: email,
       subject: "OTP Verification",
       text: `Your OTP is ${otp}. It expires in 5 minutes.`,
     });
 
+
     res.json({ message: "OTP sent to email" });
   } catch (err) {
-    res.status(500).json({ error: "Server error" });
+    console.error("AUTH ERROR:", err);
+    res.status(500).json({ error: err.message });
   }
 };
 
@@ -98,8 +101,11 @@ exports.verifyOtp = async (req, res) => {
 exports.login = async (req, res) => {
   try {
     const { email, password } = req.body;
+    console.log("LOGIN BODY:", req.body);
 
     const user = await User.findOne({ email });
+    console.log("FOUND USER:", user);
+
     if (!user) {
       return res.status(400).json({ error: "Invalid credentials" });
     }
@@ -120,6 +126,7 @@ exports.login = async (req, res) => {
       user: { id: user._id, name: user.name, email: user.email },
     });
   } catch (err) {
-    res.status(500).json({ error: "Server error" });
+    console.error("LOGIN ERROR:", err);
+    res.status(500).json({ error: err.message });
   }
 };
