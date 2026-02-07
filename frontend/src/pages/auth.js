@@ -20,56 +20,51 @@ export default function Auth() {
   };
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
+  e.preventDefault();
 
-    try {
-      // -------- LOGIN --------
-      if (isLogin) {
-        const res = await axios.post(
-          "http://localhost:5000/api/auth/login",
+  try {
+    if (isLogin) {
+      const res = await axios.post(
+        "http://localhost:5000/api/auth/login",
+        {
+          email: form.email,
+          password: form.password,
+        }
+      );
+
+      localStorage.setItem("token", res.data.token);
+      navigate("/dashboard");
+    } else {
+      if (!otpSent) {
+        await axios.post(
+          "http://localhost:5000/api/auth/signup",
+          form
+        );
+
+        setOtpSent(true);
+        alert("OTP sent to your email");
+      } else {
+        await axios.post(
+          "http://localhost:5000/api/auth/verify-otp",
           {
             email: form.email,
-            password: form.password,
+            otp: otp,
           }
         );
 
-        localStorage.setItem("token", res.data.token);
-        navigate("/dashboard");
+        alert("Signup successful! Please login.");
+        setIsLogin(true);
+        setOtpSent(false);
+        setOtp("");
+        setForm({ name: "", email: "", password: "" });
       }
-
-      // -------- SIGNUP WITH OTP --------
-      else {
-        // STEP 1: SEND OTP
-        if (!otpSent) {
-          await axios.post(
-            "http://localhost:5000/api/auth/signup",
-            form
-          );
-
-          setOtpSent(true);
-          alert("OTP sent to your email");
-        }
-        // STEP 2: VERIFY OTP
-        else {
-          await axios.post(
-            "http://localhost:5000/api/auth/verify-otp",
-            {
-              email: form.email,
-              otp: otp,
-            }
-          );
-
-          alert("Signup successful! Please login.");
-          setIsLogin(true);
-          setOtpSent(false);
-          setOtp("");
-          setForm({ name: "", email: "", password: "" });
-        }
-      }
-    } catch (err) {
-      alert(err.response?.data?.message || "Something went wrong");
     }
-  };
+  } catch (err) {
+    // ✅ PUT IT HERE
+    alert(err.response?.data?.error || "Something went wrong");
+  }
+};
+
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-100">

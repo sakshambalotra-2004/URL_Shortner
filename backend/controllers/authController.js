@@ -29,7 +29,7 @@ exports.signup = async (req, res) => {
     }
 
     // Hash password
-    const hashedPassword = await bcrypt.hash(password, 10);
+    //const hashedPassword = await bcrypt.hash(password, 10);
 
     // Generate OTP
     const otp = generateOTP();
@@ -42,7 +42,7 @@ exports.signup = async (req, res) => {
     await TempUser.create({
       name,
       email,
-      password: hashedPassword,
+      password,
       otpHash,
       otpExpiry: Date.now() + 5 * 60 * 1000, // 5 min
     });
@@ -111,6 +111,9 @@ exports.login = async (req, res) => {
     }
 
     const isMatch = await bcrypt.compare(password, user.password);
+    console.log("PLAIN PASSWORD:", password);
+    console.log("HASHED PASSWORD:", user.password);
+    console.log("MATCH RESULT:", isMatch);
     if (!isMatch) {
       return res.status(400).json({ error: "Invalid credentials" });
     }
