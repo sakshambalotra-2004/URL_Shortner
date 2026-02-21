@@ -9,6 +9,9 @@ connectDB();
 app.use(cors());
 app.use(express.json());
 
+const dashboardRoutes = require("./routes/dashboardRoutes");
+app.use("/api/dashboard", dashboardRoutes);
+
 app.use("/api/auth", require("./routes/authRoutes"));
 app.use("/api/url", require("./routes/urlRoutes"));
 
