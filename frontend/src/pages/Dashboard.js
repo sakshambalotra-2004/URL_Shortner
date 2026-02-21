@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import api from "../utils/api";
 import Navbar from "../components/Navbar";
+import { BASE_URL } from "../utils/baseURL";
 import UrlForm from "../components/UrlForm";
 
 export default function Dashboard() {
@@ -65,7 +66,7 @@ export default function Dashboard() {
           ? "bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900" 
           : "bg-gradient-to-br from-slate-50 to-slate-100"
       }`}>
-        <Navbar isDark={isDark} onThemeToggle={() => setIsDark(!isDark)} />
+        <Navbar />
         <div className="flex items-center justify-center h-[calc(100vh-80px)]">
           <div className="text-center animate-fade-in">
             <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-blue-500 border-t-transparent mb-4"></div>
@@ -85,7 +86,7 @@ export default function Dashboard() {
           ? "bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900" 
           : "bg-gradient-to-br from-slate-50 to-slate-100"
       }`}>
-        <Navbar isDark={isDark} onThemeToggle={() => setIsDark(!isDark)} />
+        <Navbar />
         <div className="flex items-center justify-center h-[calc(100vh-80px)]">
           <div className={`rounded-xl p-6 max-w-md animate-shake ${
             isDark 
@@ -108,19 +109,51 @@ export default function Dashboard() {
         ? "bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900" 
         : "bg-gradient-to-br from-slate-50 to-slate-100"
     }`}>
-      <Navbar isDark={isDark} onThemeToggle={() => setIsDark(!isDark)} />
+      <Navbar />
 
       <div className="p-6 lg:p-8 max-w-7xl mx-auto space-y-8">
-        {/* HEADER */}
-        <div className="pt-4 animate-slide-down">
-          <h1 className={`text-3xl font-bold mb-2 ${
-            isDark ? "text-white" : "text-gray-900"
-          }`}>
-            Dashboard
-          </h1>
-          <p className={isDark ? "text-gray-400" : "text-gray-600"}>
-            Monitor and manage your shortened URLs
-          </p>
+        {/* HEADER WITH THEME TOGGLE */}
+        <div className="pt-4 flex items-start justify-between animate-slide-down">
+          <div>
+            <h1 className={`text-3xl font-bold mb-2 ${
+              isDark ? "text-white" : "text-gray-900"
+            }`}>
+              Dashboard
+            </h1>
+            <p className={isDark ? "text-gray-400" : "text-gray-600"}>
+              Monitor and manage your shortened URLs
+            </p>
+          </div>
+          
+          {/* Theme Toggle Button */}
+          <button
+            onClick={() => setIsDark(!isDark)}
+            className={`group relative p-3 rounded-xl transition-all duration-300 hover:scale-110 ${
+              isDark
+                ? "bg-gray-800 hover:bg-gray-700 text-yellow-400"
+                : "bg-white hover:bg-gray-50 text-gray-700 shadow-md"
+            }`}
+            aria-label="Toggle theme"
+          >
+            <div className="relative w-6 h-6">
+              {/* Sun Icon */}
+              <span className={`absolute inset-0 transition-all duration-500 ${
+                isDark 
+                  ? "opacity-0 rotate-180 scale-0" 
+                  : "opacity-100 rotate-0 scale-100"
+              }`}>
+                ☀️
+              </span>
+              {/* Moon Icon */}
+              <span className={`absolute inset-0 transition-all duration-500 ${
+                isDark 
+                  ? "opacity-100 rotate-0 scale-100" 
+                  : "opacity-0 -rotate-180 scale-0"
+              }`}>
+                🌙
+              </span>
+            </div>
+          </button>
         </div>
 
         {/* STATS GRID */}
@@ -272,7 +305,7 @@ export default function Dashboard() {
 
                     <td className="px-6 py-4">
                       <a
-                        href={`http://localhost:5000/api/url/${url.shortId}`}
+                        href={`${BASE_URL}/${url.shortId}`}
                         target="_blank"
                         rel="noreferrer"
                         className={`inline-flex items-center gap-2 font-medium text-sm px-3 py-1.5 rounded-lg transition-all duration-300 hover:scale-105 ${
@@ -469,7 +502,7 @@ style.textContent = `
 
   .animate-bounce-slow {
     animation: bounceSlow 2s ease-in-out infinite;
-  }
+  } 
 
   .animate-fade-in-row {
     animation: fadeIn 0.4s ease-out forwards;

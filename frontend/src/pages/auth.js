@@ -1,8 +1,6 @@
 import { useState } from "react";
-import axios from "axios";
 import { useNavigate } from "react-router-dom";
-
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
+import api from "../utils/api";
 
 export default function Auth() {
   const [isLogin, setIsLogin] = useState(true);
@@ -26,7 +24,7 @@ export default function Auth() {
 
     try {
       if (isLogin) {
-        const res = await axios.post(`${API_URL}/api/auth/login`, {
+        const res = await api.post("/auth/login", {
           email: form.email,
           password: form.password,
         });
@@ -35,11 +33,11 @@ export default function Auth() {
         navigate("/dashboard");
       } else {
         if (!otpSent) {
-          await axios.post(`${API_URL}/api/auth/signup`, form);
+          await api.post("/auth/signup", form);
           setOtpSent(true);
           alert("OTP sent to your email");
         } else {
-          await axios.post(`${API_URL}/api/auth/verify-otp`, {
+          await api.post("/auth/verify-otp", {
             email: form.email,
             otp: otp,
           });
