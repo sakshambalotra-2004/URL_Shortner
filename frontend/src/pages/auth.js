@@ -2,6 +2,8 @@ import { useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
+
 export default function Auth() {
   const [isLogin, setIsLogin] = useState(true);
   const [otpSent, setOtpSent] = useState(false);
@@ -20,51 +22,39 @@ export default function Auth() {
   };
 
   const handleSubmit = async (e) => {
-  e.preventDefault();
+    e.preventDefault();
 
-  try {
-    if (isLogin) {
-      const res = await axios.post(
-        "http://localhost:5000/api/auth/login",
-        {
+    try {
+      if (isLogin) {
+        const res = await axios.post(`${API_URL}/api/auth/login`, {
           email: form.email,
           password: form.password,
-        }
-      );
+        });
 
-      localStorage.setItem("token", res.data.token);
-      navigate("/dashboard");
-    } else {
-      if (!otpSent) {
-        await axios.post(
-          "http://localhost:5000/api/auth/signup",
-          form
-        );
-
-        setOtpSent(true);
-        alert("OTP sent to your email");
+        localStorage.setItem("token", res.data.token);
+        navigate("/dashboard");
       } else {
-        await axios.post(
-          "http://localhost:5000/api/auth/verify-otp",
-          {
+        if (!otpSent) {
+          await axios.post(`${API_URL}/api/auth/signup`, form);
+          setOtpSent(true);
+          alert("OTP sent to your email");
+        } else {
+          await axios.post(`${API_URL}/api/auth/verify-otp`, {
             email: form.email,
             otp: otp,
-          }
-        );
+          });
 
-        alert("Signup successful! Please login.");
-        setIsLogin(true);
-        setOtpSent(false);
-        setOtp("");
-        setForm({ name: "", email: "", password: "" });
+          alert("Signup successful! Please login.");
+          setIsLogin(true);
+          setOtpSent(false);
+          setOtp("");
+          setForm({ name: "", email: "", password: "" });
+        }
       }
+    } catch (err) {
+      alert(err.response?.data?.error || "Something went wrong");
     }
-  } catch (err) {
-    // ✅ PUT IT HERE
-    alert(err.response?.data?.error || "Something went wrong");
-  }
-};
-
+  };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-100">
@@ -74,7 +64,6 @@ export default function Auth() {
         </h2>
 
         <form onSubmit={handleSubmit} className="space-y-4">
-          {/* NAME */}
           {!isLogin && !otpSent && (
             <input
               type="text"
@@ -87,7 +76,6 @@ export default function Auth() {
             />
           )}
 
-          {/* EMAIL */}
           <input
             type="email"
             name="email"
@@ -99,7 +87,6 @@ export default function Auth() {
             className="w-full p-2 border rounded"
           />
 
-          {/* PASSWORD */}
           {(isLogin || (!isLogin && !otpSent)) && (
             <input
               type="password"
@@ -112,8 +99,6 @@ export default function Auth() {
             />
           )}
 
-
-          {/* OTP */}
           {!isLogin && otpSent && (
             <input
               type="text"
@@ -129,16 +114,12 @@ export default function Auth() {
             type="submit"
             className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700"
           >
-            {isLogin
-              ? "Login"
-              : otpSent
-              ? "Verify OTP"
-              : "Sign Up"}
+            {isLogin ? "Login" : otpSent ? "Verify OTP" : "Sign Up"}
           </button>
         </form>
 
         <p className="text-center mt-4 text-sm">
-          {isLogin ? "Don’t have an account?" : "Already have an account?"}
+          {isLogin ? "Don't have an account?" : "Already have an account?"}
           <button
             onClick={() => {
               setIsLogin(!isLogin);
